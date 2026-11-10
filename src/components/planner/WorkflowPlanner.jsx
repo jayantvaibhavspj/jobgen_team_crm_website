@@ -184,3 +184,4 @@ export default function WorkflowPlanner({ globalTheme, onToggleGlobalTheme }) {
     </div>
   );
 }
+

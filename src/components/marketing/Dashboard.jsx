@@ -3,42 +3,61 @@ import { Icon } from './Icons';
 import { today } from '../../hooks/useMarketingState';
 
 export default function Dashboard({ state, setView, openModal }) {
-  const priorityTasks = state.tasks.filter(t => t.priority === 'High').slice(0, 3);
-  const upcomingEvents = state.events
+  const { tasks = [], events = [], leads = [], campaigns = [] } = state;
+
+  const priorityTasks = tasks.filter(t => t.priority === 'High' && t.status !== 'done').slice(0, 3);
+  const upcomingEvents = events
     .slice()
-    .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+    .sort((a, b) => ((a.date || '') + (a.time || '')).localeCompare((b.date || '') + (b.time || '')))
     .slice(0, 3);
 
-  const pipelineStages = [
-    { label: 'New', count: 42, opacity: 1 },
-    { label: 'Contacted', count: 36, opacity: 0.8 },
-    { label: 'Qualified', count: 28, opacity: 0.6 },
-    { label: 'Won', count: 22, opacity: 0.35 }
-  ];
+  // Real pipeline breakdown
+  const stages = ['New', 'Contacted', 'Qualified', 'Won'];
+  const stageCounts = {
+    New: leads.filter(l => l.stage === 'New').length,
+    Contacted: leads.filter(l => l.stage === 'Contacted').length,
+    Qualified: leads.filter(l => l.stage === 'Qualified').length,
+    Won: leads.filter(l => l.stage === 'Won').length
+  };
+
+  const totalPipelineValue = leads
+    .filter(l => l.stage !== 'Lost')
+    .reduce((sum, l) => sum + Number(l.value || 0), 0);
+
+  const weightedForecast = leads
+    .filter(l => l.stage !== 'Lost')
+    .reduce((sum, l) => {
+      const prob = l.stage === 'Won' ? 100 : Number(l.probability || 20);
+      return sum + (Number(l.value || 0) * prob) / 100;
+    }, 0);
 
   return (
     <div>
       <div className="page-head">
         <div>
-          <div className="eyebrow">Your marketing workspace</div>
+          <div className="eyebrow">Your team workspace</div>
           <h1>Good morning, team ☀</h1>
-          <p className="subtitle">Here’s what’s moving your marketing forward today.</p>
+          <p className="subtitle">Realtime team pipeline, scheduled campaigns, and priority tasks.</p>
         </div>
         <div className="actions">
+          <button className="btn small" onClick={() => setView('leads')}>
+            <Icon name="leads" /> View CRM
+          </button>
           <button className="btn primary" onClick={() => setView('studio')}>
             <Icon name="plus" /> Create content
           </button>
         </div>
       </div>
 
+      {/* KPI Metrics */}
       <div className="metrics">
         <div className="card metric">
           <div className="metric-top">
             <span>Tasks due today</span>
             <span className="metric-icon"><Icon name="workboard" /></span>
           </div>
-          <strong>{state.tasks.filter(t => t.due === today).length || 5}</strong>
-          <small>2 high-priority tasks</small>
+          <strong>{tasks.filter(t => t.due === today && t.status !== 'done').length}</strong>
+          <small>{tasks.filter(t => t.priority === 'High').length} high-priority</small>
         </div>
 
         <div className="card metric">
@@ -46,17 +65,17 @@ export default function Dashboard({ state, setView, openModal }) {
             <span>Scheduled posts</span>
             <span className="metric-icon"><Icon name="calendar" /></span>
           </div>
-          <strong>{state.events.length}</strong>
-          <small>Across 3 platforms</small>
+          <strong>{events.length}</strong>
+          <small>Across active platforms</small>
         </div>
 
         <div className="card metric">
           <div className="metric-top">
-            <span>New leads</span>
+            <span>Active Leads</span>
             <span className="metric-icon"><Icon name="leads" /></span>
           </div>
-          <strong>{state.leads.length + 20}</strong>
-          <small className="positive">↑ 12% from last week</small>
+          <strong>{leads.filter(l => l.stage !== 'Lost').length}</strong>
+          <small className="positive">Weighted: ${Math.round(weightedForecast).toLocaleString()}</small>
         </div>
 
         <div className="card metric">
@@ -64,12 +83,13 @@ export default function Dashboard({ state, setView, openModal }) {
             <span>Active campaigns</span>
             <span className="metric-icon"><Icon name="campaigns" /></span>
           </div>
-          <strong>{state.campaigns.filter(c => c.status === 'Active').length}</strong>
-          <small>All systems moving</small>
+          <strong>{campaigns.filter(c => c.status === 'Active').length}</strong>
+          <small>In market now</small>
         </div>
       </div>
 
       <div className="two-col">
+        {/* Priority Work */}
         <section className="card">
           <div className="card-head">
             <div>
@@ -85,7 +105,7 @@ export default function Dashboard({ state, setView, openModal }) {
                   <span className="check-dot"><Icon name="check" /></span>
                   <div>
                     <div className="row-title">{t.title}</div>
-                    <div className="row-meta">{t.assignee} · {t.due === today ? 'Due today' : t.due}</div>
+                    <div className="row-meta">{t.assignee || 'You'} · {t.due === today ? 'Due today' : t.due || 'No date'}</div>
                   </div>
                 </div>
                 <span className="badge error">{t.priority}</span>
@@ -93,37 +113,39 @@ export default function Dashboard({ state, setView, openModal }) {
             ))
           ) : (
             <div className="empty">
-              <Icon name="assets" />
+              <Icon name="workboard" />
               <h3>All caught up</h3>
-              <p>Add your next task to the Workboard.</p>
+              <p>No high-priority tasks pending. Add tasks to the Workboard.</p>
             </div>
           )}
         </section>
 
+        {/* AI Brief */}
         <section className="card brief">
           <div className="eyebrow"><Icon name="studio" /> Your daily advantage</div>
           <h2>AI Daily Brief</h2>
-          <p>A focused start to a productive day.</p>
+          <p>A focused start to a productive team day.</p>
           <ul>
-            <li>Finish the LinkedIn carousel before today’s review.</li>
-            <li>Give 3 new qualified leads a personal follow-up.</li>
-            <li>Your hiring insights posts are gaining momentum.</li>
+            <li>Follow up with qualified opportunities in the Lead CRM.</li>
+            <li>Review scheduled posts for LinkedIn and Instagram.</li>
+            <li>Collaborative sprint board is active in the Workflow Planner.</li>
           </ul>
           <button className="btn primary small" onClick={() => openModal('brief')}>
             Read full brief <Icon name="arrow" />
           </button>
           <p className="muted" style={{ fontSize: '9px', marginBottom: 0, marginTop: '12px' }}>
-            Simulated insights based on demo data
+            Actionable workspace intelligence
           </p>
         </section>
       </div>
 
       <div className="two-col">
+        {/* Upcoming Posts */}
         <section className="card">
           <div className="card-head">
             <div>
               <h2>Upcoming posts</h2>
-              <p>Your next moments in the spotlight.</p>
+              <p>Next scheduled brand communications.</p>
             </div>
             <button className="btn small" onClick={() => setView('calendar')}>Open calendar ↗</button>
           </div>
@@ -144,31 +166,39 @@ export default function Dashboard({ state, setView, openModal }) {
             <div className="empty">
               <Icon name="calendar" />
               <h3>No scheduled posts</h3>
-              <p>Plan your next post on the calendar.</p>
+              <p>Schedule your next content post on the calendar.</p>
             </div>
           )}
         </section>
 
+        {/* Real Lead Pipeline */}
         <section className="card">
           <div className="card-head">
             <div>
               <h2>Lead pipeline</h2>
-              <p>A healthy flow of new opportunities.</p>
+              <p>Active deals and stage distribution.</p>
             </div>
             <button className="btn small" onClick={() => setView('leads')}>View CRM ↗</button>
           </div>
-          <span className="muted small-text">Total opportunities</span>
+          <span className="muted small-text">Gross pipeline value</span>
           <h1 style={{ marginTop: '8px' }}>
-            128 <span className="positive" style={{ font: '10px Manrope' }}>↑ 18 this week</span>
+            ${totalPipelineValue.toLocaleString()}{' '}
+            <span className="positive" style={{ font: '11px Manrope', fontWeight: 700 }}>
+              (Forecast: ${Math.round(weightedForecast).toLocaleString()})
+            </span>
           </h1>
+
           <div className="pipeline">
-            {pipelineStages.map(stage => (
-              <div key={stage.label}>
-                <div className="pipeline-bar" style={{ opacity: stage.opacity }}></div>
-                <strong>{stage.count}</strong>
-                <small>{stage.label}</small>
-              </div>
-            ))}
+            {stages.map((stage, idx) => {
+              const opacities = [1, 0.8, 0.6, 0.4];
+              return (
+                <div key={stage}>
+                  <div className="pipeline-bar" style={{ opacity: opacities[idx] }}></div>
+                  <strong>{stageCounts[stage] || 0}</strong>
+                  <small>{stage}</small>
+                </div>
+              );
+            })}
           </div>
         </section>
       </div>

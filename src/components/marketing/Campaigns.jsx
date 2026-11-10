@@ -1,23 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Icon } from './Icons';
+import CampaignDrawer from './CampaignDrawer';
 
 export default function Campaigns({ state, openModal, showToast }) {
   const { campaigns, setCampaigns } = state;
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+
+  const filtered = campaigns.filter(c => statusFilter === 'All' || c.status === statusFilter);
 
   const totalBudget = campaigns.reduce((n, c) => n + Number(c.budget || 0), 0);
+  const totalSpent = campaigns.reduce((n, c) => n + Number(c.spent || 0), 0);
   const activeCount = campaigns.filter(c => c.status === 'Active').length;
-  const completedCount = campaigns.filter(c => c.status === 'Completed').length;
 
-  const handleStatusChange = (id, newStatus) => {
-    setCampaigns(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
-    showToast(`Campaign status updated to ${newStatus}.`);
+  const handleUpdate = (updated) => {
+    setCampaigns(prev => prev.map(c => c.id === updated.id ? updated : c));
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('Delete this campaign?')) {
-      setCampaigns(prev => prev.filter(c => c.id !== id));
-      showToast('Campaign deleted.');
-    }
+    setCampaigns(prev => prev.filter(c => c.id !== id));
+    showToast('Campaign deleted.');
   };
 
   return (
@@ -26,7 +28,7 @@ export default function Campaigns({ state, openModal, showToast }) {
         <div>
           <div className="eyebrow">Growth Engine</div>
           <h1>Campaigns</h1>
-          <p className="subtitle">Give your next big idea a clear direction.</p>
+          <p className="subtitle">Execute targeted multi-channel growth campaigns.</p>
         </div>
         <div className="actions">
           <button className="btn primary" onClick={() => openModal('campaign-new')}>
@@ -42,7 +44,7 @@ export default function Campaigns({ state, openModal, showToast }) {
             <span className="metric-icon"><Icon name="campaigns" /></span>
           </div>
           <strong>{campaigns.length}</strong>
-          <small>Ideas with a plan</small>
+          <small>Growth initiatives</small>
         </div>
 
         <div className="card metric">
@@ -51,7 +53,7 @@ export default function Campaigns({ state, openModal, showToast }) {
             <span className="metric-icon"><Icon name="automations" /></span>
           </div>
           <strong>{activeCount}</strong>
-          <small>Making an impact</small>
+          <small>Live in market</small>
         </div>
 
         <div className="card metric">
@@ -60,59 +62,84 @@ export default function Campaigns({ state, openModal, showToast }) {
             <span className="metric-icon"><Icon name="analytics" /></span>
           </div>
           <strong>${totalBudget.toLocaleString()}</strong>
-          <small>Local demo budgets</small>
+          <small>Total budget allocation</small>
         </div>
 
         <div className="card metric">
           <div className="metric-top">
-            <span>Completed</span>
+            <span>Total Spent</span>
             <span className="metric-icon"><Icon name="check" /></span>
           </div>
-          <strong>{completedCount}</strong>
-          <small>A moment to celebrate</small>
+          <strong>${totalSpent.toLocaleString()}</strong>
+          <small className="positive">
+            {totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0}% deployed
+          </small>
+        </div>
+      </div>
+
+      <div className="toolbar">
+        <div className="tabs">
+          {['All', 'Active', 'Draft', 'Paused', 'Completed'].map(st => (
+            <button
+              key={st}
+              className={`tab ${statusFilter === st ? 'active' : ''}`}
+              onClick={() => setStatusFilter(st)}
+            >
+              {st} {st !== 'All' ? `(${campaigns.filter(c => c.status === st).length})` : ''}
+            </button>
+          ))}
         </div>
       </div>
 
       <div className="three-col">
-        {campaigns.map(c => (
-          <article key={c.id} className="card campaign-card">
-            <span className={`badge ${c.status === 'Active' ? 'success' : ''}`}>
-              {c.status}
-            </span>
-            <h3>{c.name}</h3>
-            <p className="muted small-text">{c.platform} · Brand awareness</p>
+        {filtered.map(c => {
+          const spent = Number(c.spent || 0);
+          const budget = Number(c.budget || 1);
+          const burnRate = Math.min(100, Math.round((spent / budget) * 100));
 
-            <div className="progress">
-              <i style={{ width: `${c.progress || 0}%` }}></i>
-            </div>
+          return (
+            <article
+              key={c.id}
+              className="card campaign-card"
+              onClick={() => setSelectedCampaign(c)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <span className={`badge ${c.status === 'Active' ? 'success' : ''}`}>
+                  {c.status}
+                </span>
+                <span className="muted" style={{ fontSize: '11px' }}>{c.platform}</span>
+              </div>
 
-            <div className="campaign-stats">
-              <span>{c.progress || 0}% plan progress</span>
-              <span>${Number(c.budget || 0).toLocaleString()} budget</span>
-            </div>
+              <h3 style={{ margin: '12px 0 6px' }}>{c.name}</h3>
 
-            <div className="field">
-              <label>Status</label>
-              <select
-                value={c.status}
-                onChange={e => handleStatusChange(c.id, e.target.value)}
-              >
-                <option>Draft</option>
-                <option>Active</option>
-                <option>Paused</option>
-                <option>Completed</option>
-              </select>
-            </div>
+              <div style={{ marginTop: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span>Spend vs Budget</span>
+                  <b>${spent.toLocaleString()} / ${budget.toLocaleString()}</b>
+                </div>
+                <div className="progress">
+                  <i style={{ width: `${burnRate}%`, background: burnRate > 90 ? 'var(--error)' : 'var(--primary)' }}></i>
+                </div>
+              </div>
 
-            <div className="actions">
-              <button className="btn small" onClick={() => openModal('campaign-edit', c)}>Edit campaign</button>
-              <button className="icon-btn" onClick={() => handleDelete(c.id)} title="Delete campaign">
-                <Icon name="trash" />
-              </button>
-            </div>
-          </article>
-        ))}
+              <div className="campaign-stats" style={{ marginTop: '12px', marginBottom: 0 }}>
+                <span>{c.progress || 0}% objective progress</span>
+                <span className="badge small">{burnRate}% spent</span>
+              </div>
+            </article>
+          );
+        })}
       </div>
+
+      <CampaignDrawer
+        campaign={selectedCampaign}
+        isOpen={Boolean(selectedCampaign)}
+        onClose={() => setSelectedCampaign(null)}
+        onUpdateCampaign={handleUpdate}
+        onDeleteCampaign={handleDelete}
+        showToast={showToast}
+      />
     </div>
   );
 }

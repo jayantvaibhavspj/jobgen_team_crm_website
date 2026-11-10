@@ -6,7 +6,7 @@ export default function Automations({ state, openModal, showToast }) {
 
   const handleToggle = (id) => {
     setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
-    showToast('Rule status updated.');
+    showToast('Automation status updated.');
   };
 
   const handleTest = (r) => {
@@ -34,7 +34,7 @@ export default function Automations({ state, openModal, showToast }) {
         <div>
           <div className="eyebrow">Smart Workflows</div>
           <h1>Automations</h1>
-          <p className="subtitle">Let the small things take care of themselves.</p>
+          <p className="subtitle">Active CRM event triggers: follow-ups, timeline logs, and celebratory alerts.</p>
         </div>
         <div className="actions">
           <button className="btn primary" onClick={() => openModal('rule-new')}>
@@ -50,7 +50,7 @@ export default function Automations({ state, openModal, showToast }) {
             <span className="metric-icon"><Icon name="automations" /></span>
           </div>
           <strong>{rules.length}</strong>
-          <small>Your rule collection</small>
+          <small>Configured triggers</small>
         </div>
 
         <div className="card metric">
@@ -59,16 +59,16 @@ export default function Automations({ state, openModal, showToast }) {
             <span className="metric-icon"><Icon name="check" /></span>
           </div>
           <strong>{enabledCount}</strong>
-          <small>Active workflow triggers</small>
+          <small>Live triggers in workspace</small>
         </div>
 
         <div className="card metric">
           <div className="metric-top">
-            <span>Simulated runs</span>
+            <span>Active Executions</span>
             <span className="metric-icon"><Icon name="analytics" /></span>
           </div>
           <strong>{totalRuns}</strong>
-          <small>Automated executions</small>
+          <small>Total triggered events</small>
         </div>
 
         <div className="card metric">
@@ -76,8 +76,8 @@ export default function Automations({ state, openModal, showToast }) {
             <span>Time saved</span>
             <span className="metric-icon"><Icon name="workboard" /></span>
           </div>
-          <strong>2.4 h</strong>
-          <small>Estimated efficiency gain</small>
+          <strong>{(totalRuns * 0.25 + 2).toFixed(1)} h</strong>
+          <small>Automated follow-up hours</small>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ export default function Automations({ state, openModal, showToast }) {
               <Icon name="automations" />
               <div>
                 <small className="muted">WHEN</small>
-                <p style={{ margin: '3px 0' }}>{r.trigger}</p>
+                <p style={{ margin: '3px 0', fontWeight: 600 }}>{r.trigger}</p>
               </div>
             </div>
 
@@ -108,11 +108,11 @@ export default function Automations({ state, openModal, showToast }) {
               <Icon name="arrow" />
               <div>
                 <small className="muted">THEN</small>
-                <p style={{ margin: '3px 0' }}>{r.action}</p>
+                <p style={{ margin: '3px 0', fontWeight: 600 }}>{r.action}</p>
               </div>
             </div>
 
-            <p className="muted small-text">{r.runs || 0} simulated runs</p>
+            <p className="muted small-text">{r.runs || 0} real executions logged</p>
 
             <div className="actions">
               <button
@@ -131,7 +131,7 @@ export default function Automations({ state, openModal, showToast }) {
       </div>
 
       <div className="notice" style={{ marginTop: '22px' }}>
-        Rules run inside your unified workspace. Enabling a rule simulates automatic actions across your marketing stack.
+        ✦ Live Automations: When "New lead added" fires, a follow-up date 2 days out and a timeline note are created automatically. When a lead is moved to "Won", a congratulations notification and customer onboarding log are posted.
       </div>
     </div>
   );

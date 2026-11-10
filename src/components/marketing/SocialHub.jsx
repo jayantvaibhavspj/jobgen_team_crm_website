@@ -134,3 +134,4 @@ export default function SocialHub({ state, showToast, openModal, setView }) {
     </div>
   );
 }
+

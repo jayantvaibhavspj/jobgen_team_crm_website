@@ -112,3 +112,4 @@ export default function CompetitorRadar({ state, openModal, showToast }) {
     </div>
   );
 }
+

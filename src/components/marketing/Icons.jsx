@@ -48,3 +48,4 @@ export function Icon({ name, style, className }) {
     />
   );
 }
+

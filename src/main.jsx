@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles/marketing.css';
 import './styles/planner.css';
+import './styles/crm.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
