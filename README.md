@@ -1,43 +1,81 @@
-# Jobgen Marketing OS & Team CRM Website
+# Jobgen Marketing OS & Team Workflow Planner
 
-Integrated Marketing OS and Daily Workflow Planner workspace for Jobgen.ai.
+Single unified web application merging Jobgen's Marketing OS and Daily Workflow Planner into a seamless React + Vite workspace.
+
+## 🚀 Unified Architecture
+
+Everything runs from a single unified project:
+- **Frontend Stack:** React 18, Vite 6, Lucide Icons, Canvas Confetti
+- **Design System:** Native Dark/Light theme sync, responsive grid, drag-and-drop Kanban
+- **Routing:** Instant client-side SPA navigation between all marketing modules and the daily workflow planner
 
 ## 📁 Project Structure
 
 ```
-├── marketing_team/     # Marketing OS frontend with integrated CRM & Workflow Planner
-│   ├── index.html      # Main Marketing OS entry point
-│   ├── style.css       # Complete UI design system
-│   ├── app.js          # Client-side SPA router & CRM state management
-│   ├── assets/         # Brand assets & icons
-│   └── planner-app/    # Embedded Workflow Planner bundle
+├── public/                 # Brand assets & public files
+│   └── assets/brandmark.svg
 │
-└── workflow_planner/   # React + Vite source for the Work Planner
-    ├── src/            # Components, hooks, utilities & state
-    ├── package.json    # React dependencies
-    └── vite.config.js  # Vite build configuration
+├── src/
+│   ├── main.jsx            # React root mount
+│   ├── App.jsx             # Shell layout (Sidebar + Topbar + View router)
+│   ├── styles/
+│   │   ├── marketing.css   # Marketing OS design system
+│   │   └── planner.css     # Workflow Planner design system
+│   │
+│   ├── components/
+│   │   ├── marketing/      # Native React Marketing OS views
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── ContentStudio.jsx
+│   │   │   ├── SocialHub.jsx
+│   │   │   ├── ContentCalendar.jsx
+│   │   │   ├── Workboard.jsx
+│   │   │   ├── AssetLibrary.jsx
+│   │   │   ├── CompetitorRadar.jsx
+│   │   │   ├── LeadCRM.jsx
+│   │   │   ├── Campaigns.jsx
+│   │   │   ├── Analytics.jsx
+│   │   │   ├── Automations.jsx
+│   │   │   ├── Settings.jsx
+│   │   │   ├── LoginView.jsx
+│   │   │   ├── Modals.jsx
+│   │   │   └── Icons.jsx
+│   │   │
+│   │   └── planner/        # Native Workflow Planner components
+│   │       ├── WorkflowPlanner.jsx
+│   │       ├── TaskBoard.jsx
+│   │       ├── BentoStats.jsx
+│   │       ├── PomodoroTimer.jsx
+│   │       ├── ScopeSelector.jsx
+│   │       ├── PeriodBar.jsx
+│   │       ├── QuickAdd.jsx
+│   │       └── YesterdayPendingSection.jsx
+│   │
+│   ├── hooks/
+│   │   ├── useMarketingState.js # Unified marketing state & local persistence
+│   │   └── useWorkPlanner.js    # Sprint planning, task rollover & backup
+│   │
+│   └── utils/
+│       ├── confetti.js
+│       ├── dateUtils.js
+│       ├── fileUtils.js
+│       └── sound.js
+│
+├── index.html
+├── package.json
+└── vite.config.js
 ```
 
-## 🚀 Getting Started
+## 🛠️ Quick Start
 
-### 1. Marketing OS (Integrated CRM & Planner)
 ```bash
-cd marketing_team
+# 1. Install dependencies
 npm install
-npm run dev
-```
-Runs at: [http://localhost:5173/](http://localhost:5173/)
 
-### 2. Workflow Planner (Standalone Dev Server)
-```bash
-cd workflow_planner
-npm install
+# 2. Run dev server
 npm run dev
-```
-Runs at: [http://localhost:3000/](http://localhost:3000/)
 
-## ✨ Key Features
-- **Marketing OS Dashboard & Lead CRM:** Track pipeline stages, scheduled posts, and marketing metrics.
-- **Integrated Workflow Planner:** Access daily sprint task board directly from the Marketing OS sidebar.
-- **Dual-Mode Integration:** Switch seamlessly between live dev server and embedded bundle.
-- **Theme Sync:** Automatic light and dark mode synchronization.
+# 3. Build for production
+npm run build
+```
+
+Dev Server runs at: **[http://localhost:5173/](http://localhost:5173/)**
