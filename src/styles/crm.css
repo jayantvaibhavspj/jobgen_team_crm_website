@@ -371,7 +371,7 @@
   100% { background-position: -200% 0; }
 }
 
-/* Mobile Snap for Lead Board */
+/* Responsive CRM & Mobile Snap */
 @media (max-width: 900px) {
   .lead-board {
     display: flex;
@@ -379,13 +379,58 @@
     scroll-snap-type: x mandatory;
     padding-bottom: 16px;
     -webkit-overflow-scrolling: touch;
+    gap: 12px;
   }
   .lead-column {
     flex: 0 0 280px;
     scroll-snap-align: start;
-    margin-right: 12px;
   }
   .drawer {
     width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .forecast-banner {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 14px;
+    border-radius: 12px;
+  }
+  .forecast-stat small {
+    font-size: 10px;
+  }
+  .forecast-stat strong {
+    font-size: 18px;
+  }
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .toolbar > div:first-child {
+    width: 100%;
+  }
+  .crm-view-toggles {
+    width: 100%;
+    display: flex;
+  }
+  .crm-view-btn {
+    flex: 1;
+    justify-content: center;
+  }
+  .crm-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+  .drawer {
+    width: 100%;
+    max-width: 100vw;
+  }
+  .drawer-head,
+  .drawer-body {
+    padding: 16px;
   }
 }
