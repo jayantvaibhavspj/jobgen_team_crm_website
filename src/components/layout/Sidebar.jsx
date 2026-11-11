@@ -152,7 +152,7 @@ export default function Sidebar({
             title={isCollapsed ? 'Pin sidebar open (stay open)' : 'Collapse sidebar (hover-to-open)'}
             aria-label={isCollapsed ? 'Pin sidebar open (stay open)' : 'Collapse sidebar (hover-to-open)'}
           >
-            {isCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
           </button>
         )}
       </div>
