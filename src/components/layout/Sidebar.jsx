@@ -70,6 +70,9 @@ export default function Sidebar({
   user,
   userRole = 'Admin'
 }) {
+  const [isHovered, setIsHovered] = useState(false);
+  const isExpanded = !isCollapsed || isHovered;
+
   const [favorites, setFavorites] = useState(() => {
     try {
       const stored = localStorage.getItem('jobgen_favorites');
@@ -99,10 +102,15 @@ export default function Sidebar({
   const userDisplayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Jayant Vaibhav';
 
   return (
-    <aside className="app-sidebar" aria-label="Main Navigation">
+    <aside
+      className={`app-sidebar ${isCollapsed ? 'is-collapsed' : ''} ${isHovered ? 'is-hovered' : ''}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      aria-label="Main Navigation"
+    >
       {/* Workspace Selector Dropdown Header */}
       <div className="sidebar-top-box">
-        {!isCollapsed ? (
+        {isExpanded ? (
           <div className="sidebar-workspace-card">
             <span className="sidebar-workspace-label">WORKSPACE</span>
             <div className="sidebar-workspace-select">
@@ -116,15 +124,17 @@ export default function Sidebar({
           </div>
         )}
 
-        <button
-          type="button"
-          className="sidebar-collapse-btn"
-          onClick={onToggleCollapse}
-          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-        </button>
+        {isExpanded && (
+          <button
+            type="button"
+            className="sidebar-collapse-btn"
+            onClick={onToggleCollapse}
+            title={isCollapsed ? 'Pin sidebar open' : 'Auto-collapse to hover'}
+            aria-label={isCollapsed ? 'Pin sidebar open' : 'Auto-collapse to hover'}
+          >
+            {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
+        )}
       </div>
 
       {/* Nav List */}

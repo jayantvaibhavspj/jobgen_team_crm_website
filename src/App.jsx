@@ -40,13 +40,13 @@ export default function App() {
   const [modalState, setModalState] = useState({ type: null, data: null });
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
-  // Sidebar collapsible state with localStorage persistence
+  // Sidebar collapsible state with localStorage persistence (defaults to collapsed + hover expand)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
-      return localStorage.getItem('jobgen_sidebar_collapsed') === 'true';
-    } catch {
-      return false;
-    }
+      const stored = localStorage.getItem('jobgen_sidebar_collapsed');
+      if (stored !== null) return stored === 'true';
+    } catch {}
+    return true;
   });
 
   const toggleSidebarCollapse = () => {
