@@ -130,9 +130,15 @@ export default function Sidebar({
             </div>
           </div>
         ) : (
-          <div className="sidebar-workspace-collapsed" title="Jobgen.ai Marketing">
+          <button
+            type="button"
+            className="sidebar-workspace-collapsed"
+            onClick={onToggleCollapse}
+            title="Click to pin sidebar open"
+            aria-label="Click to pin sidebar open"
+          >
             <span>J</span>
-          </div>
+          </button>
         )}
 
         {isExpanded && (
@@ -140,10 +146,10 @@ export default function Sidebar({
             type="button"
             className="sidebar-collapse-btn"
             onClick={onToggleCollapse}
-            title={isCollapsed ? 'Pin sidebar open' : 'Auto-collapse to hover'}
-            aria-label={isCollapsed ? 'Pin sidebar open' : 'Auto-collapse to hover'}
+            title={isCollapsed ? 'Pin sidebar open (stay open)' : 'Collapse sidebar (hover-to-open)'}
+            aria-label={isCollapsed ? 'Pin sidebar open (stay open)' : 'Collapse sidebar (hover-to-open)'}
           >
-            {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            {isCollapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
           </button>
         )}
       </div>

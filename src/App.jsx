@@ -41,20 +41,21 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
-  // Sidebar collapsible state with localStorage persistence (defaults to collapsed + hover expand)
+  // Sidebar collapsible state with localStorage persistence
+  // Default: false (Page opens fully expanded by default; when collapsed once, expands on hover; when opened with button, stays open)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
-      const stored = localStorage.getItem('jobgen_sidebar_collapsed');
+      const stored = localStorage.getItem('jobgen_sidebar_collapsed_v2');
       if (stored !== null) return stored === 'true';
     } catch {}
-    return true;
+    return false; // Default: fully open on first visit / reload!
   });
 
   const toggleSidebarCollapse = () => {
     setIsSidebarCollapsed(prev => {
       const next = !prev;
       try {
-        localStorage.setItem('jobgen_sidebar_collapsed', String(next));
+        localStorage.setItem('jobgen_sidebar_collapsed_v2', String(next));
       } catch {}
       return next;
     });
