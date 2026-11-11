@@ -41,24 +41,18 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
-  // Sidebar collapsible state with localStorage persistence
-  // Default: false (Page opens fully expanded by default; when collapsed once, expands on hover; when opened with button, stays open)
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+  // Sidebar collapsible state: Page load hone par side panel hamesha khula hi milega (false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  useEffect(() => {
     try {
-      const stored = localStorage.getItem('jobgen_sidebar_collapsed_v2');
-      if (stored !== null) return stored === 'true';
+      localStorage.removeItem('jobgen_sidebar_collapsed');
+      localStorage.removeItem('jobgen_sidebar_collapsed_v2');
     } catch {}
-    return false; // Default: fully open on first visit / reload!
-  });
+  }, []);
 
   const toggleSidebarCollapse = () => {
-    setIsSidebarCollapsed(prev => {
-      const next = !prev;
-      try {
-        localStorage.setItem('jobgen_sidebar_collapsed_v2', String(next));
-      } catch {}
-      return next;
-    });
+    setIsSidebarCollapsed(prev => !prev);
   };
 
   // Global Ctrl+K / Cmd+K listener
