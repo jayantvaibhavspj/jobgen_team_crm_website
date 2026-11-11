@@ -49,3 +49,4 @@ export function CardFooter({ children, className = '', style = {}, ...props }) {
 }
 
 export default Card;
+

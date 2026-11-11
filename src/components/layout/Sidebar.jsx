@@ -15,6 +15,7 @@ import {
   Settings as SettingsIcon,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Star,
   LogOut
 } from 'lucide-react';
@@ -99,19 +100,21 @@ export default function Sidebar({
 
   return (
     <aside className="app-sidebar" aria-label="Main Navigation">
-      {/* Brand Header */}
-      <div className="sidebar-header">
-        <a
-          href="#dashboard"
-          className="sidebar-brand"
-          onClick={(e) => { e.preventDefault(); setView('dashboard'); }}
-        >
-          <div className="sidebar-brand-icon">j</div>
-          <div className="sidebar-brand-info">
-            <span className="sidebar-brand-name">Jobgen</span>
-            <span className="sidebar-brand-tag">Marketing OS</span>
+      {/* Workspace Selector Dropdown Header */}
+      <div className="sidebar-top-box">
+        {!isCollapsed ? (
+          <div className="sidebar-workspace-card">
+            <span className="sidebar-workspace-label">WORKSPACE</span>
+            <div className="sidebar-workspace-select">
+              <span className="sidebar-workspace-name">Jobgen.ai Marketing</span>
+              <ChevronDown size={14} className="sidebar-workspace-chevron" />
+            </div>
           </div>
-        </a>
+        ) : (
+          <div className="sidebar-workspace-collapsed" title="Jobgen.ai Marketing">
+            <span>J</span>
+          </div>
+        )}
 
         <button
           type="button"
@@ -120,7 +123,7 @@ export default function Sidebar({
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
       </div>
 
@@ -214,3 +217,4 @@ export default function Sidebar({
     </aside>
   );
 }
+

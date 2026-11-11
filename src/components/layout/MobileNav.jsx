@@ -144,3 +144,4 @@ export default function MobileNav({ view, setView, theme, toggleTheme }) {
     </>
   );
 }
+

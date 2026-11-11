@@ -32,3 +32,4 @@ export function Tabs({ tabs = [], activeTab, onChange, className = '', style = {
 }
 
 export default Tabs;
+

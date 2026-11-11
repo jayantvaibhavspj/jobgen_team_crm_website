@@ -16,3 +16,4 @@ export function Skeleton({ width = '100%', height = '16px', borderRadius = 'var(
 }
 
 export default Skeleton;
+

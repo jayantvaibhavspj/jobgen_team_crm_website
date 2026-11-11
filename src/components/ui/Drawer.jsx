@@ -45,3 +45,4 @@ export function Drawer({ isOpen, onClose, title, children, width = '480px' }) {
 }
 
 export default Drawer;
+

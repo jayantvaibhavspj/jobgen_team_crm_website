@@ -135,7 +135,14 @@ export function useMarketingState() {
   };
 
   // 3. Core State
-  const [theme, setTheme] = useState(() => readLocal('theme', 'light'));
+  const [theme, setTheme] = useState(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paramTheme = urlParams.get('theme');
+      if (paramTheme === 'dark' || paramTheme === 'light') return paramTheme;
+    } catch {}
+    return readLocal('theme', 'light');
+  });
   const [tasks, setTasksState] = useState(() => readLocal('tasks', []));
   const [events, setEventsState] = useState(() => readLocal('events', []));
   const [leads, setLeadsState] = useState(() => readLocal('leads', defaultLeads));

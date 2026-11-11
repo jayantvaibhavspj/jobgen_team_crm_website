@@ -3,40 +3,85 @@ import {
   CheckSquare,
   Calendar,
   Users,
-  Megaphone,
   Sparkles,
-  ArrowRight,
   Plus,
+  ArrowRight,
   Clock,
   CheckCircle2,
-  TrendingUp,
-  AlertCircle
+  AlertTriangle
 } from 'lucide-react';
 import { today } from '../../hooks/useMarketingState';
-import { PageHeader } from '../ui/PageHeader';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Avatar } from '../ui/Avatar';
-import { EmptyState } from '../ui/EmptyState';
 
 export default function Dashboard({ state, setView, openModal }) {
-  const { tasks = [], events = [], leads = [], campaigns = [] } = state;
+  const { tasks = [], events = [], leads = [] } = state;
 
-  // Filter tasks due today or high priority
-  const todayTasks = tasks.filter(t => (t.due === today || t.priority === 'High') && t.status !== 'done');
-  const priorityTasks = tasks.filter(t => t.priority === 'High' && t.status !== 'done').slice(0, 4);
+  // 1. Time-of-day greeting
+  const currentHour = new Date().getHours();
+  let timeGreeting = 'Good morning';
+  if (currentHour >= 12 && currentHour < 17) {
+    timeGreeting = 'Good afternoon';
+  } else if (currentHour >= 17) {
+    timeGreeting = 'Good evening';
+  }
 
-  // Filter posts scheduled today or upcoming
-  const todayEvents = events.filter(e => e.date === today);
-  const upcomingEvents = events
-    .slice()
+  // 2. State filtering
+  // Tasks: due today or overdue, not done
+  const tasksDueOrOverdue = tasks.filter(t => t.status !== 'done' && (t.due === today || t.due < today));
+  const tasksSorted = [...tasksDueOrOverdue].sort((a, b) => {
+    if (a.due < today && b.due >= today) return -1;
+    if (b.due < today && a.due >= today) return 1;
+    return (a.due || '').localeCompare(b.due || '');
+  });
+
+  // Lead follow-ups: leads with follow_up_date <= today or Qualified/New needing touch
+  const leadsDueOrOverdue = leads.filter(l => {
+    if (l.stage === 'Won' || l.stage === 'Lost') return false;
+    if (l.follow_up_date) {
+      return l.follow_up_date <= today;
+    }
+    // If no explicit follow-up date, prioritize Qualified or New
+    return l.stage === 'Qualified';
+  });
+
+  // Posts today
+  const postsToday = events.filter(e => e.date === today);
+
+  // Total actionable items today
+  const totalActionCount = tasksDueOrOverdue.length + leadsDueOrOverdue.length + postsToday.length;
+
+  // Open leads total (all active stages)
+  const openLeadsCount = leads.filter(l => l.stage !== 'Won' && l.stage !== 'Lost').length;
+
+  // 3. Upcoming posts (next 4 after today)
+  const upcomingPosts = events
+    .filter(e => e.date > today)
     .sort((a, b) => ((a.date || '') + (a.time || '')).localeCompare((b.date || '') + (b.time || '')))
     .slice(0, 4);
 
-  // Filter leads that need follow-up (Qualified or New)
-  const actionLeads = leads.filter(l => l.stage === 'Qualified' || l.stage === 'New').slice(0, 3);
+  // Friendly date formatter
+  const formatFriendlyDate = (dateStr) => {
+    if (!dateStr) return '';
+    if (dateStr === today) return 'Today';
+    
+    // Check if tomorrow
+    const d = new Date(dateStr + 'T00:00:00');
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    if (d.toDateString() === tomorrow.toDateString()) {
+      return 'Tomorrow';
+    }
 
-  // Pipeline calculations
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short'
+    });
+  };
+
+  // 4. Lead Pipeline breakdown
   const stages = ['New', 'Contacted', 'Qualified', 'Won'];
   const stageCounts = {
     New: leads.filter(l => l.stage === 'New').length,
@@ -44,458 +89,376 @@ export default function Dashboard({ state, setView, openModal }) {
     Qualified: leads.filter(l => l.stage === 'Qualified').length,
     Won: leads.filter(l => l.stage === 'Won').length
   };
-
-  const totalPipelineValue = leads
-    .filter(l => l.stage !== 'Lost')
-    .reduce((sum, l) => sum + Number(l.value || 0), 0);
-
-  const weightedForecast = leads
-    .filter(l => l.stage !== 'Lost')
-    .reduce((sum, l) => {
-      const prob = l.stage === 'Won' ? 100 : Number(l.probability || 20);
-      return sum + (Number(l.value || 0) * prob) / 100;
-    }, 0);
-
-  const activeCampaigns = campaigns.filter(c => c.status === 'Active');
-
-  const formattedDate = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric'
-  });
+  const totalLeadsInStages = Math.max(1, leads.length);
 
   return (
-    <div className="dash-container">
-      {/* Page Header */}
-      <PageHeader
-        eyebrow="Workspace Overview"
-        title="Good morning, team"
-        description="Here is what needs your attention and action today."
-        actions={
-          <>
-            <Button
-              variant="secondary"
-              size="md"
-              icon={<Users size={15} />}
-              onClick={() => setView('leads')}
-            >
-              View CRM
-            </Button>
-            <Button
-              variant="secondary"
-              size="md"
-              icon={<Sparkles size={15} />}
-              onClick={() => setView('studio')}
-            >
-              Create content
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              icon={<Plus size={15} />}
-              onClick={() => openModal('task-new')}
-            >
-              Add task
-            </Button>
-          </>
-        }
-      />
-
-      {/* Hero Section: "Today" Action Center */}
-      <section className="dash-today-hero" aria-label="Today action center">
-        <div className="dash-today-header">
-          <div className="dash-today-title-wrap">
-            <span className="dash-today-badge">
-              <Clock size={12} />
-              Today
-            </span>
-            <span className="dash-today-date">{formattedDate}</span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-              {todayTasks.length} urgent tasks · {todayEvents.length} posts going out
-            </span>
-          </div>
+    <div className="dash-root">
+      {/* 1. Header */}
+      <header className="dash-header">
+        <div className="dash-header-text">
+          <h1 className="dash-greeting">{timeGreeting}</h1>
+          <p className="dash-subheading">
+            You have {totalActionCount} {totalActionCount === 1 ? 'thing' : 'things'} to do today.
+          </p>
         </div>
 
-        <div className="dash-today-grid">
-          {/* Column 1: Tasks Due Today */}
-          <div className="dash-today-col">
-            <div className="dash-col-head">
-              <span className="dash-col-title">
-                <CheckSquare size={16} style={{ color: 'var(--primary)' }} />
-                Tasks Due Today
+        <div className="dash-header-actions">
+          <Button
+            variant="secondary"
+            size="md"
+            icon={<Sparkles size={16} />}
+            onClick={() => setView('studio')}
+          >
+            Create content
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            icon={<Users size={16} />}
+            onClick={() => openModal('lead-new')}
+          >
+            Add lead
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            icon={<Plus size={16} />}
+            onClick={() => openModal('task-new')}
+          >
+            Add task
+          </Button>
+        </div>
+      </header>
+
+      {/* 2. Stat Strip: ONE card split into 4 clickable cells */}
+      <section className="dash-stat-strip-card" aria-label="Key metrics">
+        <button
+          type="button"
+          className="dash-stat-cell-btn"
+          onClick={() => setView('workboard')}
+          title="Open Workboard"
+        >
+          <span className="dash-stat-cell-label">Tasks due</span>
+          <span className="dash-stat-cell-value">{tasksDueOrOverdue.length}</span>
+          <span className="dash-stat-cell-sub">
+            {tasksDueOrOverdue.some(t => t.due < today) ? (
+              <span className="dash-status-alert">
+                <AlertTriangle size={12} /> Overdue tasks
               </span>
-              <span className="dash-col-count">{todayTasks.length}</span>
-            </div>
-
-            <div className="dash-today-list">
-              {todayTasks.length > 0 ? (
-                todayTasks.slice(0, 3).map(task => (
-                  <div key={task.id} className="dash-today-item">
-                    <Avatar name={task.assignee || 'You'} size="xs" />
-                    <div className="dash-today-item-content">
-                      <div className="dash-today-item-title">{task.title}</div>
-                      <div className="dash-today-item-meta">
-                        <Badge variant={task.priority === 'High' ? 'danger' : 'warning'} dot>
-                          {task.priority}
-                        </Badge>
-                        <span>{task.due === today ? 'Today' : task.due}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <EmptyState
-                  icon={<CheckCircle2 size={18} />}
-                  title="All caught up"
-                  description="No pending tasks due today."
-                  action={
-                    <Button variant="ghost" size="sm" onClick={() => openModal('task-new')}>
-                      Add task
-                    </Button>
-                  }
-                  style={{ padding: '24px 16px', margin: 0 }}
-                />
-              )}
-            </div>
-
-            {todayTasks.length > 3 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setView('workboard')}
-                style={{ marginTop: 'var(--space-3)', width: '100%', justifyContent: 'center' }}
-              >
-                View all {todayTasks.length} tasks <ArrowRight size={13} />
-              </Button>
+            ) : (
+              'Due today or earlier'
             )}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className="dash-stat-cell-btn"
+          onClick={() => setView('leads')}
+          title="Open Lead CRM"
+        >
+          <span className="dash-stat-cell-label">Follow-ups due</span>
+          <span className="dash-stat-cell-value">{leadsDueOrOverdue.length}</span>
+          <span className="dash-stat-cell-sub">Pipeline contacts</span>
+        </button>
+
+        <button
+          type="button"
+          className="dash-stat-cell-btn"
+          onClick={() => setView('calendar')}
+          title="Open Content Calendar"
+        >
+          <span className="dash-stat-cell-label">Posts today</span>
+          <span className="dash-stat-cell-value">{postsToday.length}</span>
+          <span className="dash-stat-cell-sub">Scheduled releases</span>
+        </button>
+
+        <button
+          type="button"
+          className="dash-stat-cell-btn"
+          onClick={() => setView('leads')}
+          title="Open Lead CRM"
+        >
+          <span className="dash-stat-cell-label">Open leads</span>
+          <span className="dash-stat-cell-value">{openLeadsCount}</span>
+          <span className="dash-stat-cell-sub">Active in pipeline</span>
+        </button>
+      </section>
+
+      {/* 3. Two columns (~60 / 40) */}
+      <div className="dash-columns-grid">
+        {/* Left Column: Card "Today" */}
+        <section className="dash-card dash-today-card" aria-label="Today items">
+          <div className="dash-card-header">
+            <div className="dash-card-header-left">
+              <h2 className="dash-card-title">Today</h2>
+              <Badge variant="primary" size="sm">{totalActionCount}</Badge>
+            </div>
           </div>
 
-          {/* Column 2: Content Going Out */}
-          <div className="dash-today-col">
-            <div className="dash-col-head">
-              <span className="dash-col-title">
-                <Calendar size={16} style={{ color: 'var(--primary)' }} />
-                Content Going Out
-              </span>
-              <span className="dash-col-count">{todayEvents.length || upcomingEvents.length}</span>
-            </div>
-
-            <div className="dash-today-list">
-              {(todayEvents.length > 0 ? todayEvents : upcomingEvents).slice(0, 3).map(event => (
-                <div key={event.id} className="dash-today-item">
-                  <div className="dash-today-item-content">
-                    <div className="dash-today-item-title">{event.title}</div>
-                    <div className="dash-today-item-meta">
-                      <Badge variant="primary">{event.platform}</Badge>
-                      <span>{event.time || '09:00'} · {event.date === today ? 'Today' : event.date}</span>
+          <div className="dash-card-body dash-today-body">
+            {totalActionCount === 0 ? (
+              <div className="dash-caught-up-state">
+                <CheckCircle2 size={36} className="dash-caught-up-icon" />
+                <h3 className="dash-caught-up-title">You are all caught up</h3>
+                <p className="dash-caught-up-desc">
+                  No overdue tasks, immediate follow-ups, or posts pending for today.
+                </p>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => openModal('task-new')}
+                >
+                  Add a new task
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* Group 1: Tasks */}
+                <div className="dash-group-section">
+                  <div className="dash-group-header">
+                    <div className="dash-group-title-wrap">
+                      <CheckSquare size={15} className="dash-group-icon" />
+                      <span className="dash-group-title">Tasks</span>
+                      <span className="dash-group-count">{tasksDueOrOverdue.length}</span>
                     </div>
+                    <button
+                      type="button"
+                      className="dash-link-btn"
+                      onClick={() => setView('workboard')}
+                    >
+                      Open board <ArrowRight size={13} />
+                    </button>
+                  </div>
+
+                  <div className="dash-group-list">
+                    {tasksSorted.length > 0 ? (
+                      tasksSorted.slice(0, 4).map(task => {
+                        const isOverdue = task.due && task.due < today;
+                        return (
+                          <div key={task.id} className="dash-item-row">
+                            <div className="dash-item-main">
+                              <span className="dash-item-title">{task.title}</span>
+                              <div className="dash-item-meta">
+                                <span>{task.assignee || 'Unassigned'}</span>
+                                {task.priority && (
+                                  <>
+                                    <span>·</span>
+                                    <span>{task.priority} priority</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="dash-item-aside">
+                              {isOverdue ? (
+                                <Badge variant="danger" size="sm">Overdue</Badge>
+                              ) : (
+                                <span className="dash-item-due">Today</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="dash-empty-line">No tasks due today.</p>
+                    )}
                   </div>
                 </div>
-              ))}
 
-              {events.length === 0 && (
-                <EmptyState
-                  icon={<Calendar size={18} />}
-                  title="No scheduled posts"
-                  description="Keep your brand active with scheduled content."
-                  action={
-                    <Button variant="ghost" size="sm" onClick={() => openModal('event-new')}>
-                      Schedule post
-                    </Button>
-                  }
-                  style={{ padding: '24px 16px', margin: 0 }}
-                />
-              )}
-            </div>
+                <div className="dash-divider" />
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setView('calendar')}
-              style={{ marginTop: 'var(--space-3)', width: '100%', justifyContent: 'center' }}
-            >
-              Open calendar <ArrowRight size={13} />
-            </Button>
-          </div>
-
-          {/* Column 3: Leads & Deals To Action */}
-          <div className="dash-today-col">
-            <div className="dash-col-head">
-              <span className="dash-col-title">
-                <Users size={16} style={{ color: 'var(--primary)' }} />
-                High-Impact Leads
-              </span>
-              <span className="dash-col-count">{actionLeads.length}</span>
-            </div>
-
-            <div className="dash-today-list">
-              {actionLeads.length > 0 ? (
-                actionLeads.map(lead => (
-                  <div key={lead.id} className="dash-today-item">
-                    <Avatar name={lead.name} size="xs" />
-                    <div className="dash-today-item-content">
-                      <div className="dash-today-item-title">{lead.name}</div>
-                      <div className="dash-today-item-meta">
-                        <span>{lead.company}</span>
-                        <span>·</span>
-                        <strong style={{ color: 'var(--text-primary)' }}>
-                          ${Number(lead.value || 0).toLocaleString()}
-                        </strong>
-                      </div>
+                {/* Group 2: Lead Follow-ups */}
+                <div className="dash-group-section">
+                  <div className="dash-group-header">
+                    <div className="dash-group-title-wrap">
+                      <Users size={15} className="dash-group-icon" />
+                      <span className="dash-group-title">Lead follow-ups</span>
+                      <span className="dash-group-count">{leadsDueOrOverdue.length}</span>
                     </div>
-                    <Badge variant={lead.stage === 'Qualified' ? 'success' : 'info'}>
-                      {lead.stage}
-                    </Badge>
+                    <button
+                      type="button"
+                      className="dash-link-btn"
+                      onClick={() => setView('leads')}
+                    >
+                      Open CRM <ArrowRight size={13} />
+                    </button>
                   </div>
-                ))
-              ) : (
-                <EmptyState
-                  icon={<Users size={18} />}
-                  title="Pipeline clean"
-                  description="No urgent leads requiring follow-up."
-                  action={
-                    <Button variant="ghost" size="sm" onClick={() => openModal('lead-new')}>
-                      Add lead
-                    </Button>
-                  }
-                  style={{ padding: '24px 16px', margin: 0 }}
-                />
-              )}
-            </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setView('leads')}
-              style={{ marginTop: 'var(--space-3)', width: '100%', justifyContent: 'center' }}
-            >
-              View full CRM <ArrowRight size={13} />
-            </Button>
-          </div>
-        </div>
-      </section>
+                  <div className="dash-group-list">
+                    {leadsDueOrOverdue.length > 0 ? (
+                      leadsDueOrOverdue.slice(0, 4).map(lead => {
+                        const isOverdue = lead.follow_up_date && lead.follow_up_date < today;
+                        return (
+                          <div key={lead.id} className="dash-item-row">
+                            <div className="dash-item-lead-left">
+                              <Avatar name={lead.name} size="sm" />
+                              <div className="dash-item-main">
+                                <span className="dash-item-title">{lead.name}</span>
+                                <div className="dash-item-meta">
+                                  <span>{lead.company || 'Direct'}</span>
+                                  {lead.value && (
+                                    <>
+                                      <span>·</span>
+                                      <span>${Number(lead.value).toLocaleString()}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
 
-      {/* Quieter KPI Stat Strip */}
-      <section className="dash-stats-strip" aria-label="Key performance indicators">
-        <div className="dash-stat-cell">
-          <div className="dash-stat-top">
-            <span className="dash-stat-label">Tasks Due Today</span>
-            <CheckSquare size={16} className="dash-stat-icon" />
-          </div>
-          <div className="dash-stat-value">
-            {tasks.filter(t => t.due === today && t.status !== 'done').length}
-          </div>
-          <div className="dash-stat-sub">
-            {tasks.filter(t => t.status === 'in_progress').length} in progress · {tasks.filter(t => t.status === 'done').length} completed
-          </div>
-        </div>
+                            <div className="dash-item-aside">
+                              {isOverdue ? (
+                                <Badge variant="danger" size="sm">Overdue</Badge>
+                              ) : (
+                                <Badge variant="secondary" size="sm">{lead.stage}</Badge>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <p className="dash-empty-line">No follow-ups due today.</p>
+                    )}
+                  </div>
+                </div>
 
-        <div className="dash-stat-cell">
-          <div className="dash-stat-top">
-            <span className="dash-stat-label">Scheduled Posts</span>
-            <Calendar size={16} className="dash-stat-icon" />
-          </div>
-          <div className="dash-stat-value">{events.length}</div>
-          <div className="dash-stat-sub">Across LinkedIn, Instagram & Facebook</div>
-        </div>
+                <div className="dash-divider" />
 
-        <div className="dash-stat-cell">
-          <div className="dash-stat-top">
-            <span className="dash-stat-label">Pipeline Value</span>
-            <TrendingUp size={16} className="dash-stat-icon" />
-          </div>
-          <div className="dash-stat-value">${totalPipelineValue.toLocaleString()}</div>
-          <div className="dash-stat-sub positive">
-            Forecast: ${Math.round(weightedForecast).toLocaleString()}
-          </div>
-        </div>
+                {/* Group 3: Posts Today */}
+                <div className="dash-group-section">
+                  <div className="dash-group-header">
+                    <div className="dash-group-title-wrap">
+                      <Calendar size={15} className="dash-group-icon" />
+                      <span className="dash-group-title">Posts today</span>
+                      <span className="dash-group-count">{postsToday.length}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="dash-link-btn"
+                      onClick={() => setView('calendar')}
+                    >
+                      Open calendar <ArrowRight size={13} />
+                    </button>
+                  </div>
 
-        <div className="dash-stat-cell">
-          <div className="dash-stat-top">
-            <span className="dash-stat-label">Active Campaigns</span>
-            <Megaphone size={16} className="dash-stat-icon" />
-          </div>
-          <div className="dash-stat-value">{activeCampaigns.length}</div>
-          <div className="dash-stat-sub">
-            {campaigns.length} total marketing initiatives
-          </div>
-        </div>
-      </section>
+                  <div className="dash-group-list">
+                    {postsToday.length > 0 ? (
+                      postsToday.slice(0, 4).map(post => (
+                        <div key={post.id} className="dash-item-row">
+                          <div className="dash-item-main">
+                            <span className="dash-item-title">{post.title}</span>
+                            <div className="dash-item-meta">
+                              <Badge variant="primary" size="xs">{post.platform}</Badge>
+                              <span>{post.time || 'Scheduled'}</span>
+                            </div>
+                          </div>
 
-      {/* Secondary Main Grid */}
-      <div className="dash-main-grid">
-        {/* Left Column: Priority Work & AI Daily Brief */}
-        <div>
-          {/* Priority Work Section */}
-          <section className="dash-section-card">
+                          <div className="dash-item-aside">
+                            <span className="dash-item-due">Ready</span>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="dash-empty-line">No posts scheduled for today.</p>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* Right Column: Two cards */}
+        <div className="dash-right-col">
+          {/* Card 1: Upcoming posts */}
+          <section className="dash-card" aria-label="Upcoming posts">
             <div className="dash-card-header">
               <div className="dash-card-header-left">
-                <h3 className="dash-card-title">Priority Work</h3>
-                <p className="dash-card-subtitle">High-priority tasks requiring team focus</p>
+                <h2 className="dash-card-title">Upcoming posts</h2>
+                <span className="dash-card-count-sub">Next scheduled</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setView('workboard')}>
-                View board <ArrowRight size={13} />
-              </Button>
+              <button
+                type="button"
+                className="dash-link-btn"
+                onClick={() => setView('calendar')}
+              >
+                Open calendar <ArrowRight size={13} />
+              </button>
             </div>
 
             <div className="dash-card-body">
-              {priorityTasks.length > 0 ? (
-                priorityTasks.map(t => (
-                  <div key={t.id} className="dash-row-item">
-                    <div className="dash-row-left">
-                      <Avatar name={t.assignee || 'Team'} size="sm" />
-                      <div className="dash-row-info">
-                        <div className="dash-row-title">{t.title}</div>
-                        <div className="dash-row-meta">
-                          {t.assignee || 'You'} · {t.due === today ? 'Due today' : t.due || 'No date'}
+              {upcomingPosts.length > 0 ? (
+                <div className="dash-upcoming-list">
+                  {upcomingPosts.map(post => (
+                    <div key={post.id} className="dash-upcoming-row">
+                      <div className="dash-upcoming-info">
+                        <span className="dash-upcoming-title">{post.title}</span>
+                        <div className="dash-upcoming-meta">
+                          <Badge variant="secondary" size="xs">{post.platform}</Badge>
+                          <span>{post.time || ''}</span>
                         </div>
                       </div>
+                      <span className="dash-upcoming-date">
+                        {formatFriendlyDate(post.date)}
+                      </span>
                     </div>
-                    <Badge variant={t.priority === 'High' ? 'danger' : 'warning'}>
-                      {t.priority}
-                    </Badge>
-                  </div>
-                ))
+                  ))}
+                </div>
               ) : (
-                <EmptyState
-                  icon={<CheckCircle2 size={18} />}
-                  title="No high-priority tasks"
-                  description="All critical tasks are currently handled."
-                  action={
-                    <Button variant="secondary" size="sm" onClick={() => openModal('task-new')}>
-                      Create a task
-                    </Button>
-                  }
-                />
+                <p className="dash-empty-line">No upcoming posts scheduled.</p>
               )}
             </div>
           </section>
 
-          {/* AI Focus Brief */}
-          <section className="dash-ai-brief-card">
-            <div className="dash-ai-brief-eyebrow">
-              <Sparkles size={14} />
-              Strategic Intelligence
-            </div>
-            <h3 className="dash-ai-brief-title">AI Daily Brief</h3>
-            <ul className="dash-ai-brief-list">
-              <li>Follow up with qualified opportunities in the Lead CRM to maintain pipeline momentum.</li>
-              <li>Review scheduled posts for LinkedIn and Instagram before afternoon distribution.</li>
-              <li>Workflow sprint board has 2 pending items rolled over from yesterday.</li>
-            </ul>
-            <Button
-              variant="secondary"
-              size="sm"
-              iconRight={<ArrowRight size={13} />}
-              onClick={() => openModal('brief')}
-            >
-              Read full intelligence brief
-            </Button>
-          </section>
-        </div>
-
-        {/* Right Column: Lead Pipeline & Upcoming Posts */}
-        <div>
-          {/* Lead Pipeline */}
-          <section className="dash-section-card">
+          {/* Card 2: Lead pipeline */}
+          <section className="dash-card" aria-label="Lead pipeline breakdown">
             <div className="dash-card-header">
               <div className="dash-card-header-left">
-                <h3 className="dash-card-title">Lead Pipeline</h3>
-                <p className="dash-card-subtitle">Active opportunities across deal stages</p>
+                <h2 className="dash-card-title">Lead pipeline</h2>
+                <span className="dash-card-count-sub">Status distribution</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => setView('leads')}>
-                View CRM <ArrowRight size={13} />
-              </Button>
+              <button
+                type="button"
+                className="dash-link-btn"
+                onClick={() => setView('leads')}
+              >
+                Open CRM <ArrowRight size={13} />
+              </button>
             </div>
 
             <div className="dash-card-body">
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 'var(--space-3)' }}>
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>Gross Pipeline Value</span>
-                <strong style={{ fontSize: 'var(--text-lg)', color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                  ${totalPipelineValue.toLocaleString()}
-                </strong>
-              </div>
-
-              {/* Pipeline bar visualization */}
-              <div style={{ display: 'flex', gap: '6px', height: '10px', borderRadius: 'var(--radius-sm)', overflow: 'hidden', background: 'var(--bg-subtle)', marginBottom: 'var(--space-4)' }}>
-                {stages.map((stage, idx) => {
+              <div className="dash-pipeline-list">
+                {stages.map(stage => {
                   const count = stageCounts[stage] || 0;
-                  const total = leads.length || 1;
-                  const pct = Math.max(5, (count / total) * 100);
-                  const colors = ['var(--primary)', 'var(--color-info)', 'var(--color-warning)', 'var(--color-success)'];
+                  const pct = Math.round((count / totalLeadsInStages) * 100);
+
+                  let barColor = 'var(--primary)';
+                  if (stage === 'Contacted') barColor = 'var(--color-info)';
+                  if (stage === 'Qualified') barColor = 'var(--color-warning)';
+                  if (stage === 'Won') barColor = 'var(--color-success)';
+
                   return (
-                    <div
-                      key={stage}
-                      title={`${stage}: ${count} leads`}
-                      style={{
-                        width: `${pct}%`,
-                        background: colors[idx],
-                        borderRadius: '2px',
-                        transition: 'width var(--transition-normal)'
-                      }}
-                    />
+                    <div key={stage} className="dash-pipeline-item">
+                      <div className="dash-pipeline-label-row">
+                        <span className="dash-pipeline-stage-name">{stage}</span>
+                        <span className="dash-pipeline-stage-count">
+                          {count} {count === 1 ? 'lead' : 'leads'}
+                        </span>
+                      </div>
+                      <div className="dash-pipeline-bar-track">
+                        <div
+                          className="dash-pipeline-bar-fill"
+                          style={{
+                            width: `${Math.max(6, pct)}%`,
+                            backgroundColor: barColor
+                          }}
+                        />
+                      </div>
+                    </div>
                   );
                 })}
               </div>
-
-              {/* Stage breakdown */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 'var(--space-2)', textAlign: 'center' }}>
-                {stages.map(stage => (
-                  <div key={stage} style={{ padding: '8px 4px', background: 'var(--bg-subtle)', borderRadius: 'var(--radius-sm)' }}>
-                    <div style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--font-bold)', color: 'var(--text-primary)', fontFamily: 'var(--font-heading)' }}>
-                      {stageCounts[stage] || 0}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                      {stage}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Upcoming Schedule */}
-          <section className="dash-section-card">
-            <div className="dash-card-header">
-              <div className="dash-card-header-left">
-                <h3 className="dash-card-title">Upcoming Schedule</h3>
-                <p className="dash-card-subtitle">Next scheduled brand communications</p>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setView('calendar')}>
-                Calendar <ArrowRight size={13} />
-              </Button>
-            </div>
-
-            <div className="dash-card-body">
-              {upcomingEvents.length > 0 ? (
-                upcomingEvents.map(e => (
-                  <div key={e.id} className="dash-row-item">
-                    <div className="dash-row-left">
-                      <div className="dash-row-info">
-                        <div className="dash-row-title">{e.title}</div>
-                        <div className="dash-row-meta">
-                          {e.platform} · {e.date} at {e.time || '09:00'}
-                        </div>
-                      </div>
-                    </div>
-                    <Badge variant="default">Scheduled</Badge>
-                  </div>
-                ))
-              ) : (
-                <EmptyState
-                  icon={<Calendar size={18} />}
-                  title="No upcoming posts"
-                  description="Plan your next moment in the spotlight."
-                  action={
-                    <Button variant="secondary" size="sm" onClick={() => openModal('event-new')}>
-                      Schedule a post
-                    </Button>
-                  }
-                />
-              )}
             </div>
           </section>
         </div>
