@@ -1,6 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import './styles/tokens.css';
+import './styles/components.css';
+import './styles/shell.css';
+import './styles/dashboard.css';
 import './styles/marketing.css';
 import './styles/planner.css';
 import './styles/crm.css';
