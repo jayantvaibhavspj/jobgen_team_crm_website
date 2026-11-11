@@ -68,32 +68,37 @@ export default function MobileNav({ view, setView, theme, toggleTheme }) {
 
       {/* "More" Sheet Modal */}
       {isMoreOpen && (
-        <div className="modal-backdrop" onClick={() => setIsMoreOpen(false)}>
+        <div className="mobile-sheet-backdrop" onClick={() => setIsMoreOpen(false)}>
           <div
-            className="modal"
-            style={{ width: '380px', maxHeight: '80vh', padding: '20px' }}
+            className="mobile-bottom-sheet"
             onClick={e => e.stopPropagation()}
           >
+            <div className="mobile-sheet-handle" />
+
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--font-bold)', margin: 0 }}>
-                Workspace Menu
-              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img src="/logo.png" alt="Jobgen" style={{ width: '22px', height: '22px', objectFit: 'contain' }} />
+                <h2 style={{ fontSize: 'var(--text-md)', fontWeight: 'var(--font-bold)', margin: 0, color: 'var(--text-primary)' }}>
+                  Workspace Navigation
+                </h2>
+              </div>
               <button
                 type="button"
-                className="ui-icon-btn"
+                className="ui-icon-btn bordered"
                 onClick={() => setIsMoreOpen(false)}
+                aria-label="Close menu"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+            <div style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '4px' }}>
               {navigationSections.map(sec => (
                 <div key={sec.title} style={{ marginBottom: '16px' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 'var(--font-bold)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+                  <div style={{ fontSize: '10px', fontWeight: 'var(--font-bold)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
                     {sec.title}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                     {sec.items.map(item => {
                       const IconComp = item.icon;
                       const isActive = view === item.id;
@@ -105,19 +110,20 @@ export default function MobileNav({ view, setView, theme, toggleTheme }) {
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
-                            padding: '8px 10px',
-                            borderRadius: 'var(--radius-sm)',
-                            border: '1px solid var(--border-subtle)',
-                            background: isActive ? 'var(--primary-soft)' : 'var(--bg-surface)',
+                            gap: '10px',
+                            padding: '10px 12px',
+                            borderRadius: 'var(--radius-md)',
+                            border: isActive ? '1px solid var(--primary)' : '1px solid var(--border-subtle)',
+                            background: isActive ? 'var(--primary-soft)' : 'var(--bg-subtle)',
                             color: isActive ? 'var(--primary)' : 'var(--text-primary)',
-                            fontSize: 'var(--text-xs)',
+                            fontSize: 'var(--text-sm)',
                             fontWeight: isActive ? 'var(--font-bold)' : 'var(--font-medium)',
                             cursor: 'pointer',
-                            textAlign: 'left'
+                            textAlign: 'left',
+                            minHeight: '44px'
                           }}
                         >
-                          <IconComp size={16} />
+                          <IconComp size={18} style={{ flexShrink: 0 }} />
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
                         </button>
                       );
@@ -127,14 +133,15 @@ export default function MobileNav({ view, setView, theme, toggleTheme }) {
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', paddingTop: '12px', borderTop: '1px solid var(--border-subtle)' }}>
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Appearance</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle)' }}>
+              <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>Theme appearance</span>
               <button
                 type="button"
                 className="ui-btn ui-btn-secondary ui-btn-sm"
                 onClick={toggleTheme}
+                style={{ minHeight: '36px', padding: '6px 14px' }}
               >
-                {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+                {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
                 <span>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
               </button>
             </div>

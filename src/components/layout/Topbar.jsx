@@ -16,11 +16,21 @@ export default function Topbar({
 
   return (
     <header className="app-topbar">
-      {/* Left: Breadcrumbs & Quick Search Trigger */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+      {/* Left: Mobile Brand Logo + Breadcrumbs & Quick Search Trigger */}
+      <div className="topbar-left-wrap">
+        <button
+          type="button"
+          className="mobile-brand-mark"
+          onClick={() => setView('dashboard')}
+          title="Jobgen Dashboard"
+          aria-label="Jobgen Dashboard"
+        >
+          <img src="/logo.png" alt="Jobgen" />
+        </button>
+
         <div className="app-breadcrumb">
-          <span>Workspace</span>
-          <ChevronRight size={14} style={{ opacity: 0.5 }} />
+          <span className="breadcrumb-parent">Workspace</span>
+          <ChevronRight size={14} className="breadcrumb-sep" />
           <span className="app-breadcrumb-current">{currentRouteName}</span>
         </div>
 
@@ -30,18 +40,16 @@ export default function Topbar({
           onClick={onOpenCommandPalette}
           title="Search anything (Ctrl+K)"
         >
-          <Search size={13} style={{ color: 'var(--text-muted)' }} />
-          <span>Search or jump to...</span>
-          <kbd style={{ background: 'var(--bg-muted)', padding: '2px 5px', borderRadius: '4px', fontSize: '10px', color: 'var(--text-secondary)' }}>
-            Ctrl K
-          </kbd>
+          <Search size={14} style={{ color: 'var(--text-muted)' }} />
+          <span className="cmd-btn-text">Search or jump to...</span>
+          <kbd className="cmd-btn-kbd">Ctrl K</kbd>
         </button>
       </div>
 
       {/* Right: Actions & User Info */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-        <span className="status" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-success)', display: 'inline-block' }} />
+      <div className="topbar-right-wrap">
+        <span className="topbar-status-badge">
+          <span className="status-dot" />
           Team Workspace
         </span>
 
@@ -63,7 +71,7 @@ export default function Topbar({
         <button
           type="button"
           onClick={() => setView('login')}
-          style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer' }}
+          style={{ background: 'transparent', border: 0, padding: 0, cursor: 'pointer', display: 'grid', placeItems: 'center' }}
           title={`Signed in as ${userDisplayName}`}
         >
           <Avatar name={userDisplayName} size="sm" />
