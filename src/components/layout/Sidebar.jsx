@@ -125,7 +125,10 @@ export default function Sidebar({
           <div className="sidebar-workspace-card">
             <span className="sidebar-workspace-label">WORKSPACE</span>
             <div className="sidebar-workspace-select">
-              <span className="sidebar-workspace-name">Jobgen.ai Marketing</span>
+              <div className="sidebar-workspace-brand">
+                <img src="/logo.png" alt="Jobgen" className="sidebar-logo-icon" />
+                <span className="sidebar-workspace-name">Jobgen.ai Marketing</span>
+              </div>
               <ChevronDown size={14} className="sidebar-workspace-chevron" />
             </div>
           </div>
@@ -137,7 +140,7 @@ export default function Sidebar({
             title="Click to pin sidebar open"
             aria-label="Click to pin sidebar open"
           >
-            <span>J</span>
+            <img src="/logo.png" alt="Jobgen" className="sidebar-logo-collapsed" />
           </button>
         )}
 

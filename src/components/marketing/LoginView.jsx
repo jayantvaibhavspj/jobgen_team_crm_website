@@ -127,8 +127,8 @@ export default function LoginView({ setView, showToast, user, userRole, onSignOu
   return (
     <div className="login">
       <section className="login-art">
-        <div className="brand" style={{ paddingLeft: 0 }}>
-          <span className="brand-icon">j</span>
+        <div className="brand" style={{ paddingLeft: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <img src="/logo.png" alt="Jobgen" style={{ width: '38px', height: '38px', objectFit: 'contain' }} />
           <span>Jobgen<small>Marketing OS & Team CRM</small></span>
         </div>
 
