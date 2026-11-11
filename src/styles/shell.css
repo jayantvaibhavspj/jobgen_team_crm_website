@@ -175,6 +175,25 @@
   color: #ffffff;
   transform: scale(1.05);
 }
+.sidebar-collapse-btn.is-locked {
+  background: rgba(101, 88, 217, 0.22);
+  border-color: rgba(101, 88, 217, 0.5);
+  color: #ffffff;
+}
+.sidebar-collapse-btn.is-locked:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.sidebar-collapse-btn.is-unlocked {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fbbf24;
+}
+.sidebar-collapse-btn.is-unlocked:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
 
 .sidebar-nav-container {
   flex: 1;

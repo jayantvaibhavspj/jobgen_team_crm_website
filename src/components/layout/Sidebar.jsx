@@ -13,11 +13,11 @@ import {
   BarChart3,
   Zap,
   Settings as SettingsIcon,
-  ChevronLeft,
-  ChevronRight,
   ChevronDown,
   Star,
-  LogOut
+  LogOut,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 
@@ -147,12 +147,12 @@ export default function Sidebar({
         {isExpanded && (
           <button
             type="button"
-            className="sidebar-collapse-btn"
+            className={`sidebar-collapse-btn ${isCollapsed ? 'is-unlocked' : 'is-locked'}`}
             onClick={onToggleCollapse}
-            title={isCollapsed ? 'Pin sidebar open (stay open)' : 'Collapse sidebar (hover-to-open)'}
-            aria-label={isCollapsed ? 'Pin sidebar open (stay open)' : 'Collapse sidebar (hover-to-open)'}
+            title={isCollapsed ? 'Lock sidebar open (stay open)' : 'Unlock sidebar (auto-hover mode)'}
+            aria-label={isCollapsed ? 'Lock sidebar open (stay open)' : 'Unlock sidebar (auto-hover mode)'}
           >
-            {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            {isCollapsed ? <Unlock size={14} /> : <Lock size={14} />}
           </button>
         )}
       </div>
