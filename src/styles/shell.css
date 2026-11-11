@@ -1,30 +1,32 @@
 /* Jobgen App Shell - Modern, Focused, Linear-grade Navigation */
 
 .app-shell {
-  display: grid;
-  grid-template-columns: 240px 1fr;
   min-height: 100vh;
   background: var(--bg-canvas);
   color: var(--text-primary);
-  transition: grid-template-columns 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-left: 240px;
+  transition: padding-left 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
 }
 
 .app-shell.sidebar-collapsed {
-  grid-template-columns: 68px 1fr;
+  padding-left: 68px;
 }
 
-/* Expand grid column cleanly on hover so main content moves aside smoothly and is never covered */
+/* Expand smoothly on hover so main content moves aside and is never covered */
 .app-shell.sidebar-collapsed.sidebar-hover-expanded,
 .app-shell.sidebar-collapsed:has(.app-sidebar:hover) {
-  grid-template-columns: 240px 1fr;
+  padding-left: 240px;
 }
 
-/* Sidebar */
+/* Sidebar: Permanently pinned to viewport top and bottom (never scrolls up with page) */
 .app-sidebar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  bottom: 0;
   height: 100vh;
-  width: 100%;
+  width: 240px;
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
   border-right: 1px solid var(--sidebar-border);
@@ -34,6 +36,7 @@
   overflow-x: hidden;
   z-index: var(--z-sticky);
   user-select: none;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1);
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
@@ -433,7 +436,10 @@
 /* Responsive Styles */
 @media (max-width: 900px) {
   .app-shell {
-    grid-template-columns: 68px 1fr;
+    padding-left: 68px;
+  }
+  .app-sidebar {
+    width: 68px;
   }
   .sidebar-brand-info,
   .sidebar-group-title,
@@ -451,7 +457,7 @@
 
 @media (max-width: 640px) {
   .app-shell {
-    display: block;
+    padding-left: 0;
   }
   .app-sidebar {
     display: none;
