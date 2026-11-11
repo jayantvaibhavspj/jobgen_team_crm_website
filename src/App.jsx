@@ -39,6 +39,7 @@ export default function App() {
 
   const [modalState, setModalState] = useState({ type: null, data: null });
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
   // Sidebar collapsible state with localStorage persistence (defaults to collapsed + hover expand)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -102,7 +103,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app-shell ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+    <div className={`app-shell ${isSidebarCollapsed ? 'sidebar-collapsed' : ''} ${isSidebarCollapsed && isSidebarHovered ? 'sidebar-hover-expanded' : ''}`}>
       {/* 240px Clean Collapsible Sidebar */}
       <Sidebar
         view={view}
@@ -111,6 +112,7 @@ export default function App() {
         onToggleCollapse={toggleSidebarCollapse}
         user={user}
         userRole={userRole}
+        onHoverChange={setIsSidebarHovered}
       />
 
       {/* Main Content Area */}

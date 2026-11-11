@@ -68,10 +68,21 @@ export default function Sidebar({
   isCollapsed,
   onToggleCollapse,
   user,
-  userRole = 'Admin'
+  userRole = 'Admin',
+  onHoverChange
 }) {
   const [isHovered, setIsHovered] = useState(false);
   const isExpanded = !isCollapsed || isHovered;
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    if (onHoverChange) onHoverChange(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    if (onHoverChange) onHoverChange(false);
+  };
 
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -104,8 +115,8 @@ export default function Sidebar({
   return (
     <aside
       className={`app-sidebar ${isCollapsed ? 'is-collapsed' : ''} ${isHovered ? 'is-hovered' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
       aria-label="Main Navigation"
     >
       {/* Workspace Selector Dropdown Header */}
@@ -153,7 +164,7 @@ export default function Sidebar({
                     type="button"
                     className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                     onClick={() => setView(item.id)}
-                    title={item.label}
+                    title={!isExpanded ? item.label : undefined}
                   >
                     <span className="sidebar-nav-icon"><IconComp size={18} /></span>
                     <span className="sidebar-nav-label">{item.label}</span>
@@ -188,7 +199,7 @@ export default function Sidebar({
                     type="button"
                     className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
                     onClick={() => setView(item.id)}
-                    title={item.label}
+                    title={!isExpanded ? item.label : undefined}
                   >
                     <span className="sidebar-nav-icon"><IconComp size={18} /></span>
                     <span className="sidebar-nav-label">{item.label}</span>

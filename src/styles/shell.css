@@ -6,11 +6,17 @@
   min-height: 100vh;
   background: var(--bg-canvas);
   color: var(--text-primary);
-  transition: grid-template-columns var(--transition-normal);
+  transition: grid-template-columns 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-shell.sidebar-collapsed {
   grid-template-columns: 68px 1fr;
+}
+
+/* Expand grid column cleanly on hover so main content moves aside smoothly and is never covered */
+.app-shell.sidebar-collapsed.sidebar-hover-expanded,
+.app-shell.sidebar-collapsed:has(.app-sidebar:hover) {
+  grid-template-columns: 240px 1fr;
 }
 
 /* Sidebar */
@@ -18,7 +24,7 @@
   position: sticky;
   top: 0;
   height: 100vh;
-  width: 240px;
+  width: 100%;
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
   border-right: 1px solid var(--sidebar-border);
@@ -28,7 +34,6 @@
   overflow-x: hidden;
   z-index: var(--z-sticky);
   user-select: none;
-  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.22s ease;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
@@ -269,40 +274,38 @@
   text-transform: capitalize;
 }
 
-/* Collapsed Sidebar & Hover-Expand Behavior */
-.app-shell.sidebar-collapsed .app-sidebar {
+/* Collapsed Sidebar Resting State (Not Hovered) */
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) {
   width: 68px;
 }
 
-/* Suppress scrollbars when in resting collapsed state so icons remain cleanly centered without scrollbar track */
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered),
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-nav-container {
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered),
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-nav-container {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered)::-webkit-scrollbar,
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-nav-container::-webkit-scrollbar {
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered)::-webkit-scrollbar,
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-nav-container::-webkit-scrollbar {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
 }
 
-/* Collapsed Resting State (Not Hovered) */
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-top-box {
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-top-box {
   justify-content: center;
   padding: 16px 0 12px;
 }
 
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-workspace-card,
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-group-title,
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-nav-label,
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-pin-btn,
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-user-info,
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-collapse-btn {
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-workspace-card,
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-group-title,
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-nav-label,
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-pin-btn,
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-user-info,
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-collapse-btn {
   display: none !important;
 }
 
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-nav-item {
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-nav-item {
   width: 44px;
   height: 44px;
   margin: 0 auto 4px;
@@ -311,22 +314,9 @@
   border-radius: var(--radius-md);
 }
 
-.app-shell.sidebar-collapsed .app-sidebar:not(:hover):not(.is-hovered) .sidebar-user-pill {
+.app-shell.sidebar-collapsed:not(.sidebar-hover-expanded) .app-sidebar:not(:hover):not(.is-hovered) .sidebar-user-pill {
   justify-content: center;
   padding: 6px 0;
-}
-
-/* Hover-Expand: when mouse moves over sidebar, expand fully to 240px as a smooth overlay */
-.app-shell.sidebar-collapsed .app-sidebar:hover,
-.app-shell.sidebar-collapsed .app-sidebar.is-hovered {
-  width: 240px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  z-index: var(--z-modal);
-  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.4);
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* Topbar */
